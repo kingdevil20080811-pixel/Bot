@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  malshan-md:
+    build: .
+    container_name: malshan-md-bot
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    volumes:
+      - ./session:/app/session
+      - ./logs:/app/logs
+      - ./temp:/app/temp
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+    networks:
+      - malshan-network
+
+  mongodb:
+    image: mongo:6.0-focal
+    container_name: malshan-md-db
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: malshan-md
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - malshan-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: malshan-md-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - malshan-network
+
+networks:
+  malshan-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+  redis_data:
